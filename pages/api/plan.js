@@ -1,46 +1,49 @@
-import { OpenAI } from 'openai';
+import Navbar from '../components/Navbar';
+import { useUser } from '../contexts/UserContext';
 
-// API route to generate a simple trade plan using Groq's LLM. Accepts
-// symbol and setup, and returns a formatted plan. Requires GROQ_API_KEY.
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
-    return;
-  }
-  const { symbol, setup } = req.body || {};
-  if (!symbol || !setup) {
-    res.status(400).json({ error: 'Missing parameters' });
-    return;
-  }
-  try {
-    const client = new OpenAI({
-      apiKey: process.env.GROQ_API_KEY,
-      baseURL: 'https://api.groq.com/openai/v1',
-    });
-    const prompt = `
-You are a trading assistant helping beginners.
-The user is considering a trade on ${symbol}, which shows a ${setup.toLowerCase()}.
+export default function Plans() {
+  const { upgrade } = useUser();
 
-Based on this setup, write a simple and beginner-friendly trade plan that includes:
-- Entry strategy (price action or trigger)
-- Stop-loss logic (with rough price if possible)
-- Risk % suggestions (position size guidelines)
+  const handleUpgrade = () => {
+    // If Stripe is not set up, simulate upgrade
+    alert('Pro activated! You now have full access. 💎');
+    upgrade();
+  };
 
-Use short bullet points, emojis, and keep it super clear.
-`;
-    const response = await client.chat.completions.create({
-      model: 'llama3-70b-8192',
-      messages: [
-        { role: 'system', content: 'You are a pro trading assistant. Be concise.' },
-        { role: 'user', content: prompt },
-      ],
-      temperature: 0.4,
-      max_tokens: 500,
-    });
-    const content = response.choices[0].message.content;
-    res.status(200).json({ plan: content });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to generate plan' });
-  }
+  return (
+    <>
+      <Navbar />
+      <main className="max-w-4xl mx-auto p-4 text-white">
+        <h1 className="text-3xl font-bold text-center mb-6">Choose Your Plan</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-gray-800 border border-gray-700 p-6 rounded shadow flex flex-col">
+            <h2 className="text-2xl font-semibold mb-2">Free Plan</h2>
+            <ul className="mb-4 text-sm list-disc list-inside space-y-1">
+              <li>3 stock setups per day</li>
+              <li>No filters</li>
+              <li>No save, no regenerate, no trade plans</li>
+            </ul>
+            <span className="text-lg font-bold">Free</span>
+          </div>
+
+          <div className="bg-gray-800 border border-yellow-500 p-6 rounded shadow flex flex-col">
+            <h2 className="text-2xl font-semibold mb-2">Pro Plan</h2>
+            <ul className="mb-4 text-sm list-disc list-inside space-y-1">
+              <li>Unlimited stock setups</li>
+              <li>Regenerate & filter by price</li>
+              <li>Save favorites</li>
+              <li>AI-generated trade plans</li>
+            </ul>
+            <span className="text-lg font-bold mb-4">$9 / month</span>
+            <button
+              onClick={handleUpgrade}
+              className="bg-yellow-500 text-black px-4 py-2 rounded hover:bg-yellow-400"
+            >
+              Upgrade Now
+            </button>
+          </div>
+        </div>
+      </main>
+    </>
+  );
 }

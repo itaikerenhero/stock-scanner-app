@@ -6,21 +6,14 @@ import StockResult from '../components/StockResult';
 import { useUser } from '../contexts/UserContext';
 import { FaRocket, FaChartLine, FaBullseye } from 'react-icons/fa';
 
-// Dynamically load the comparison chart component on the client side only.
 const ComparisonChart = dynamic(() => import('../components/ComparisonChart'), { ssr: false });
 
-// The home page shows a hero section, feature cards, a comparison chart and
-// today's scanned stock setups. Free users are limited to 3 setups per day
-// and cannot regenerate or filter. Pro users have full access.
 export default function Home() {
-  const { user } = useUser();
+  const { user, isPro } = useUser();
   const [results, setResults] = useState([]);
   const [priceFilter, setPriceFilter] = useState('all');
   const [loading, setLoading] = useState(true);
-  const isPro = user?.isPro;
 
-  // Fetch stock setups from the API. This is triggered on initial load and
-  // whenever a pro user changes the price filter or regenerates.
   const fetchResults = async (filter) => {
     setLoading(true);
     try {
@@ -37,7 +30,6 @@ export default function Home() {
 
   useEffect(() => {
     fetchResults(priceFilter);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleRefresh = () => {
@@ -56,8 +48,7 @@ export default function Home() {
               Unlock Winning Stock Setups
             </h1>
             <p className="text-gray-300 mb-8">
-              Our AI‑powered scanner finds high‑probability trades that beat the
-              market.
+              Our AI‑powered scanner finds high‑probability trades that beat the market.
             </p>
             {!isPro && (
               <div className="inline-block bg-yellow-500 text-black px-4 py-2 rounded">
@@ -122,8 +113,8 @@ export default function Home() {
                   className={`px-3 py-1 rounded bg-white border ${!isPro && 'cursor-not-allowed text-gray-400'}`}
                 >
                   <option value="all">All Prices</option>
-                  <option value="under_50">Under $50</option>
-                  <option value="over_50">Over $50</option>
+                  <option value="under50">Under $50</option>
+                  <option value="over50">Over $50</option>
                 </select>
                 <button
                   onClick={handleRefresh}
@@ -148,8 +139,8 @@ export default function Home() {
                 {results.map((res, idx) => (
                   <StockResult
                     key={idx}
-                    result={res}
-                    onRefresh={handleRefresh}
+                    symbol={res.symbol}
+                    setup={res}
                   />
                 ))}
               </div>
