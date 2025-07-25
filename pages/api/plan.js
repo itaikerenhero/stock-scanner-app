@@ -13,6 +13,12 @@ export default async function handler(req, res) {
     return;
   }
   try {
+    // When no GROQ_API_KEY is configured, return a simple built‑in plan.
+    if (!process.env.GROQ_API_KEY) {
+      const plan = `📋 Trade Plan for ${symbol}\n\n- **Entry:** Wait for a break above recent resistance with strong volume. Consider entering on a pullback toward the breakout level.\n- **Stop‑Loss:** Place a stop just below the 20‑day moving average or the most recent swing low.\n- **Risk Management:** Risk no more than 1–2% of your account on this trade. Adjust position size accordingly.`;
+      res.status(200).json({ plan });
+      return;
+    }
     const client = new OpenAI({
       apiKey: process.env.GROQ_API_KEY,
       baseURL: 'https://api.groq.com/openai/v1',

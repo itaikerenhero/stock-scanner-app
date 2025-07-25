@@ -12,8 +12,9 @@ function parsePrice(priceStr) {
 }
 
 // Fetch ticker symbols from the NASDAQ screener API. Filters by price range
-// ('all', 'under_50', 'over_50') and returns up to 200 tickers. On error
-// returns a fallback list of liquid tickers.
+// ('all', 'under50', 'over50') and returns up to 300 tickers. On error
+// returns a fallback list of liquid tickers.  Note: the optional underscore
+// variants (e.g. under_50) are also supported for backward compatibility.
 async function getTickers(priceFilter) {
   try {
     const exchanges = ['nasdaq', 'nyse', 'amex'];
@@ -34,27 +35,23 @@ async function getTickers(priceFilter) {
     let data = allRows
       .map((r) => ({ symbol: r.symbol, price: parsePrice(r.lastsale) }))
       .filter((r) => r.price);
-    if (priceFilter === 'under_50') {
+    // Normalize filter values. Accept both "under50"/"over50" and
+    // underscore variants (e.g. under_50) for compatibility with the UI.
+    const filter = priceFilter?.toLowerCase() || 'all';
+    if (filter === 'under50' || filter === 'under_50') {
       data = data.filter((r) => r.price < 50);
-    } else if (priceFilter === 'over_50') {
+    } else if (filter === 'over50' || filter === 'over_50') {
       data = data.filter((r) => r.price >= 50);
     }
     data.sort((a, b) => b.price - a.price);
-    return data.slice(0, 200).map((r) => r.symbol);
+    // Return the top 300 symbols by price. More symbols increases the
+    // likelihood of finding valid setups each day.
+    return data.slice(0, 300).map((r) => r.symbol);
   } catch (err) {
-    // Provide a fallback list if the screener fails
-    return [
-      'AAPL',
-      'MSFT',
-      'NVDA',
-      'TSLA',
-      'AMZN',
-      'META',
-      'GOOG',
-      'AMD',
-      'NFLX',
-      'BRK-B',
-    ];
+    // Provide a fallback list if the screener fails.  These liquid
+    // mega‑cap names ensure the scanner still returns results when the
+    // external API is unreachable.
+    return ['AAPL', 'MSFT', 'NVDA'];
   }
 }
 
@@ -134,27 +131,38 @@ export default async function handler(req, res) {
   try {
     const tickers = await getTickers(priceFilter);
     const results = [];
-    for (const ticker of tickers) {
-      try {
-        const history = await fetchHistory(ticker);
-        if (history.closes.length < 60) continue;
-        const { sma20, sma50, valid, setup } = calculateTechnicals(history);
-        if (!valid) continue;
-        results.push({
-          symbol: ticker,
-          dates: history.dates,
-          opens: history.opens,
-          highs: history.highs,
-          lows: history.lows,
-          closes: history.closes,
-          sma20,
-          sma50,
-          setup,
-        });
-      } catch (err) {
-        continue;
+    // Helper to scan a list of tickers and append valid setups to results.
+    async function scanList(list) {
+      for (const ticker of list) {
+        if (results.length >= 3) break;
+        try {
+          const history = await fetchHistory(ticker);
+          if (history.closes.length < 60) continue;
+          const { sma20, sma50, valid, setup } = calculateTechnicals(history);
+          if (!valid) continue;
+          results.push({
+            symbol: ticker,
+            dates: history.dates,
+            opens: history.opens,
+            highs: history.highs,
+            lows: history.lows,
+            closes: history.closes,
+            sma20,
+            sma50,
+            setup,
+          });
+        } catch (err) {
+          // Ignore individual ticker failures and continue scanning.
+          continue;
+        }
       }
-      if (results.length >= 3) break;
+    }
+    // First attempt: scan the tickers returned by the screener.
+    await scanList(tickers);
+    // If no valid setups were found, fall back to a fixed set of liquid names.
+    if (results.length === 0) {
+      const fallbackList = ['AAPL', 'MSFT', 'NVDA'];
+      await scanList(fallbackList);
     }
     res.status(200).json({ results });
   } catch (err) {
