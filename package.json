@@ -13,7 +13,7 @@
     "react-dom": "18.2.0",
     "react-icons": "^4.10.1",
     "react-plotly.js": "^2.5.1",
-    "@stripe/stripe-js": "^1.69.0"
+    "@stripe/stripe-js": "^1.59.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.16",
