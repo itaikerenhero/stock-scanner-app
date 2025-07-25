@@ -12,7 +12,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "axios": "1.4.0",
-    "technicalindicators": "3.0.6",
+    "technicalindicators": "3.1.0",
     "openai": "4.24.0",
     "stripe": "12.0.0",
     "@stripe/stripe-js": "1.50.0",
