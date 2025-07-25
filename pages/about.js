@@ -71,22 +71,23 @@ export default function About() {
             <h2 className="text-3xl font-bold text-center mb-12">Real User Results</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+              {/* Updated testimonials with abstract images representing brokers, everyday investors and active traders */}
               <div className="text-center space-y-4">
-                <img src="/images/user1.png" alt="User 1" className="rounded shadow-lg w-full h-48 object-cover" />
+                <img src="/images/broker.png" alt="Professional broker testimonial" className="rounded shadow-lg w-full h-48 object-cover" />
                 <p className="text-green-400 text-2xl font-bold">📈 Up 24%</p>
-                <p>"Caught a breakout before earnings — made 24% in 2 weeks. This scanner gave me the edge I needed."</p>
+                <p>"As a seasoned Wall Street broker, I caught a breakout before earnings and gained 24% in just two weeks with StockScannerAI."</p>
               </div>
 
               <div className="text-center space-y-4">
-                <img src="/images/user2.png" alt="User 2" className="rounded shadow-lg w-full h-48 object-cover" />
+                <img src="/images/normal.png" alt="Everyday investor testimonial" className="rounded shadow-lg w-full h-48 object-cover" />
                 <p className="text-green-400 text-2xl font-bold">💎 More Confidence</p>
-                <p>"I didn’t know when to buy. The summary + trade plan showed me exactly why a stock was strong."</p>
+                <p>"I'm an everyday investor and used to hesitate. The concise summaries and trade plans showed me exactly why a setup was strong and when to enter, giving me confidence."</p>
               </div>
 
               <div className="text-center space-y-4">
-                <img src="/images/user3.png" alt="User 3" className="rounded shadow-lg w-full h-48 object-cover" />
-                <p className="text-green-400 text-2xl font-bold">🚀 $430 in Month 1</p>
-                <p>"Brand new to trading — made $430 in my first month using this tool. It's like a secret weapon."</p>
+                <img src="/images/trader.png" alt="Active trader testimonial" className="rounded shadow-lg w-full h-48 object-cover" />
+                <p className="text-green-400 text-2xl font-bold">🚀 $430 in Month 1</p>
+                <p>"Completely new to trading — I made $430 in my first month. This tool felt like a secret weapon that guided every move I made."</p>
               </div>
             </div>
           </div>
