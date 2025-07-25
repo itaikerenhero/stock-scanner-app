@@ -7,12 +7,19 @@ import { useState } from 'react';
 // unlimited access and premium features. Clicking the upgrade button
 // initiates a Stripe checkout session via an API route.
 export default function Plans() {
-  const { user } = useUser();
+  const { user, upgrade } = useUser();
   const [loading, setLoading] = useState(false);
 
   const handleSubscribe = async () => {
     setLoading(true);
     try {
+      // If Stripe publishable key is not provided, simulate an immediate upgrade.
+      if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+        // Perform local upgrade and notify the user.
+        upgrade();
+        alert('Pro unlocked! Enjoy unlimited access to premium features.');
+        return;
+      }
       const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
       const res = await fetch('/api/create-checkout-session', {
         method: 'POST',
